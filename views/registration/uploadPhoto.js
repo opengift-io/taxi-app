@@ -5,11 +5,13 @@ import {
     View,
     TouchableOpacity,
     Keyboard,
-    Image
+    Image,
+    ImageBackground
 } from 'react-native';
 import ImagePicker from 'react-native-image-picker';
+import { connect } from 'react-redux'
 
-export default class UploadPhoto extends Component {
+class UploadPhoto extends Component {
 
     constructor(props) {
         super(props)
@@ -39,7 +41,7 @@ export default class UploadPhoto extends Component {
                 console.log('User tapped custom button: ', response.customButton);
             } else {
                 const source = { uri: response.uri };
-                
+
                 // You can also display the image using data:
                 // const source = { uri: 'data:image/jpeg;base64,' + response.data };
 
@@ -52,7 +54,9 @@ export default class UploadPhoto extends Component {
 
     render() {
         return (
-            <View style={styles.container}>
+            <ImageBackground
+                source={require('../../assets/images/background.png')}
+                style={styles.container}>
                 <View style={styles.header}>
                     <TouchableOpacity
                         onPress={() => {
@@ -62,9 +66,9 @@ export default class UploadPhoto extends Component {
                         activeOpacity={0.8}
                         style={styles.backIconContainer}>
                         <Image
-                                    style={{ width: 30, height: 30 }}
-                                    source={require('../../assets/icons/back.png')}
-                                />
+                            style={{ width: 11, height: 20 }}
+                            source={require('../../assets/icons/back.png')}
+                        />
                         <Text style={styles.backText}>
                             Back
                         </Text>
@@ -87,7 +91,7 @@ export default class UploadPhoto extends Component {
                     </View>
                     <TouchableOpacity
                         onPress={() => {
-
+                            this.props.dispatch({ type: 'SET_LOGIN', value: true })
                         }}
                         activeOpacity={0.8}
                         style={styles.nextButton}>
@@ -108,10 +112,12 @@ export default class UploadPhoto extends Component {
                 </Text>
                     </TouchableOpacity>
                 </View>
-            </View>
+            </ImageBackground>
         );
     }
 }
+
+export default connect()(UploadPhoto)
 
 const styles = StyleSheet.create({
     container: {
@@ -125,43 +131,49 @@ const styles = StyleSheet.create({
         marginBottom: 100
     },
     title: {
-        fontSize: 25,
-        marginBottom: 15,
+        fontFamily: 'Roboto-Regular',
+        fontSize: 20,
+        marginBottom: 22,
+        color: 'rgb(44, 62, 80)',
     },
     photoContainer: {
         marginBottom: 20,
-        height: 100,
-        width: 100,
+        height: 80,
+        width: 80,
         borderRadius: 50,
     },
     button: {
-        marginVertical: 20,
-        height: 40,
-        paddingHorizontal: 30,
-        borderRadius: 5,
+        marginTop: 20,
+        height: 30,
+        width: 132,
+        borderRadius: 4,
         justifyContent: 'center',
         alignItems: 'center',
-        borderColor: '#3dc464',
-        borderWidth: 3
+        borderColor: '#2ecc71',
+        borderWidth: 2
     },
     buttonText: {
-        fontSize: 20,
-        color: 'rgba(0,0,0,0.2)'
+        color: 'rgb(44, 62, 80)',
+        fontSize: 14,
+        fontFamily: 'Roboto-Regular',
+        color: 'rgb(44, 62, 80)',
     },
     nextButton: {
-        height: 40,
-        paddingHorizontal: 30,
-        borderRadius: 5,
+        height: 30,
+        width: 132,
+        borderRadius: 4,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#3dc464'
+        backgroundColor: '#2ecc71'
     },
     nextButtonText: {
-        fontSize: 20,
+        fontSize: 14,
+        fontFamily: 'Roboto-Regular',
         color: '#fff'
     },
     header: {
-        height: 46,
+        backgroundColor: '#fff',
+        height: 38,
         borderBottomWidth: 1,
         borderBottomColor: 'rgba(0,0,0,0.1)',
         flexDirection: 'row',
@@ -175,12 +187,15 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     headerText: {
-        fontSize: 15,
-        fontWeight: '600'
+        fontSize: 14,
+        fontFamily: 'Roboto-Bold',
+        color: 'rgb(44, 62, 80)',
     },
     backText: {
-        color: '#3dc464',
-        fontSize: 16,
+        marginLeft: 10,
+        color: '#2ecc71',
+        fontSize: 14,
+        fontFamily: 'Roboto-Regular',
     },
     uploadAvatar: {
         flex: 1,

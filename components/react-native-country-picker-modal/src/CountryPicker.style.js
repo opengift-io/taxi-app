@@ -4,40 +4,43 @@ import { getHeightPercent } from './ratio'
 export default StyleSheet.create({
   container: {},
   modalContainer: {
-    backgroundColor: '#fff',
+   // backgroundColor: '#fff',
     flex: 1,
-    backgroundColor: '#3dc464',
+    //backgroundColor: '#2ecc71',
   },
   shadowContainer:{
     flex: 1,
     backgroundColor: '#fff',
-    margin: 19,
-    borderRadius: 5,
+    margin: 15,
     elevation: 20,
-    shadowColor: 'rgba(0, 0, 0, 0.25)',
+    shadowColor: 'rgba(0, 0, 0, 0.5)',
     shadowOffset: {
-      width: 0,
-      height: 4
+        width: 0,
+        height: 0
     },
-    shadowRadius: 6,
+    shadowRadius: 20,
     shadowOpacity: 1,
+    borderRadius: 4
   },
   contentContainer: {
     flex: 1,
+    paddingTop: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   header: {
-    marginHorizontal: 25,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    height: 66,
+    height: 50,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.1)',
+    borderBottomColor: 'rgb(236, 240, 241)',
   },
   headerText:{
-
+    color: 'rgb(44, 62, 80)',
+    fontFamily: 'Roboto-Regular',
+    fontSize: 20,
+    marginLeft: 18
   },
   input: {
     height: 48,
@@ -49,8 +52,8 @@ export default StyleSheet.create({
   touchFlag: {
     alignItems: 'center',
     justifyContent: 'center',
-    height: 42,
-    width: 42,
+    height: 31,
+    width: 31,
   },
   imgStyle: {
     flex: 1,
@@ -75,7 +78,7 @@ export default StyleSheet.create({
   },
   itemCountry: {
     flexDirection: 'row',
-    height: 60,
+    height: 50,
     justifyContent: 'flex-end',
     alignItems: 'center'
   },
@@ -83,15 +86,18 @@ export default StyleSheet.create({
     backgroundColor: 'silver',
     justifyContent: 'center',
     alignItems: 'center',
-    height: 42,
-    width: 42,
+    height: 31,
+    width: 31,
     borderRadius: 21
   },
   itemCountryName: {
     flex: 3,
   },
   countryName: {
-    fontSize: getHeightPercent(2.2)
+    //fontSize: getHeightPercent(2.2)
+    fontFamily: 'Roboto-Regular',
+    fontSize: 16,
+    color: 'rgb(44, 62, 80)'
   },
   scrollView: {
     flex: 1
@@ -113,22 +119,31 @@ export default StyleSheet.create({
     fontSize: getHeightPercent(2.2)
   },
   closeButton: {
-    height: 48,
-    width: '15%',
+    marginRight: 15,
+    padding: 5,
     alignItems: 'center',
     justifyContent: 'center'
   },
   closeButtonImage: {
-    height: 24,
-    width: 24,
-    resizeMode: 'contain'
+    height: 20,
+    width: 20,
   },
   cancelButton:{
     height: 66,
-    backgroundColor: 'rgba(0,0,0,0.1)',
+    backgroundColor: 'rgb(236, 240, 241)',
     justifyContent: 'center',
     alignItems: 'center',
-    borderBottomLeftRadius: 5,
-    borderBottomRightRadius: 5
+    borderBottomLeftRadius: 4,
+    borderBottomRightRadius: 4
+  },
+  cancelButtonText:{
+    fontFamily: 'Roboto-Regular',
+    fontSize: 16,
+    color: 'rgb(127,140,141)'
+  },
+  codeText:{
+    fontFamily: 'Roboto-Regular',
+    fontSize: 16,
+    color: 'rgb(189,195,199)'
   }
 })

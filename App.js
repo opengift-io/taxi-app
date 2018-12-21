@@ -1,19 +1,14 @@
-import React, {Component} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import React, { Component } from 'react';
 import MyApp from './views/app'
+import { Provider } from "react-redux"
+import store from './reducer/store'
 
 export default class App extends Component {
   render() {
     return (
-      <View style={styles.container}>
-        <MyApp/>
-      </View>
+      <Provider store={store}>
+        <MyApp />
+      </Provider>
     );
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});

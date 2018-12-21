@@ -11,12 +11,18 @@ import {
     Dimensions,
     StatusBar,
     Alert,
-    Image
+    Image,
+    ImageBackground,
+    AsyncStorage
 } from 'react-native';
 import API from '../../networking/api'
 import { BarIndicator } from 'react-native-indicators';
+import { GoogleApi } from '../../networking/google.api'
+import { connect } from 'react-redux'
+import LocationEnable from './locationEnableModal'
 
-export default class EnterDetails extends Component {
+class EnterDetails extends Component {
+    user = {}
     api = new API()
 
     constructor(props) {
@@ -33,7 +39,8 @@ export default class EnterDetails extends Component {
             passwordVal: false,
             redLineVelocity: false,
 
-            loading: false
+            loading: false,
+            locationModalVisible: false
         }
     }
 
@@ -94,7 +101,105 @@ export default class EnterDetails extends Component {
         }
     }
 
-    registration(){
+    async setLogin(number) {
+        try {
+            await AsyncStorage.setItem('phone', number);
+        }
+        catch (error) {
+            console.log(error);
+
+        }
+
+    }
+
+    skipCallback = () => {
+        const { params } = this.props.navigation.state
+        this.props.dispatch({ type: 'SET_USER', value: this.user })
+        this.setState({
+            locationModalVisible: false,
+            loading: false
+        })
+        this.props.navigation.navigate('chooseCity', params)
+    }
+
+    getLocation(userInfo) {
+        const { params } = this.props.navigation.state
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                let coordinates = {
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
+                }
+                GoogleApi.getPlace({
+                    latitude: coordinates.latitude,
+                    longitude: coordinates.longitude
+                }).then(responseJson => {
+                    this.props.dispatch({
+                        type: 'SET_FROM',
+                        value: {
+                            latitude: coordinates.latitude,
+                            longitude: coordinates.longitude,
+                            short_name: responseJson[0].address_components[1].short_name,
+                            address: responseJson[0].formatted_address,
+                            latitudeDelta: 0.06,
+                            longitudeDelta: 0.06,
+                            city: responseJson[2].address_components[2].long_name
+                        }
+                    })
+                    this.props.dispatch({ type: 'SET_USER', value: userInfo })
+                    this.setState({
+                        loading: false
+                    })
+                    this.props.navigation.navigate('chooseCity', {
+                        ...params,
+                        city: responseJson[2].address_components[2].long_name
+                    })
+                })
+                    .catch(error => {
+                        console.error(error);
+                    });
+            },
+            (error) => {
+                console.log('error');
+                this.getLocation(userInfo)
+                console.log(error);
+            },
+            { enableHighAccuracy: false }
+        );
+    }
+
+    locationModalCallback = () => {
+        this.setState({
+            locationModalVisible: false
+        })
+        this.getLocation(this.user)
+    }
+
+    getUser(phone) {
+        this.api.users('GET', {}, phone).then((res) => {
+            console.log(res);
+            this.user = res._items[0]
+            this.setState({
+                locationModalVisible: true
+            })
+        })
+            .catch((error) => {
+                console.log(error);
+                this.setState({
+                    loading: false
+                })
+                Alert.alert(
+                    '',
+                    'Server Error !',
+                    [
+                        { text: 'Close', onPress: () => { }, style: 'cancel' },
+                    ],
+                    { cancelable: false }
+                )
+            })
+    }
+
+    registration() {
         this.setState({
             loading: true
         })
@@ -109,13 +214,18 @@ export default class EnterDetails extends Component {
         console.log(data);
         this.api.users('POST', data).then((res) => {
             console.log(res);
-            this.setState({
-                loading: false
-            })
             if (res._status == 'OK') {
-                this.props.navigation.navigate('chooseCity', params)
+                this.setLogin(params.callingCode + params.number).then(() => {
+                    this.getUser(params.callingCode + params.number)
+                }).catch((error) => {
+                    console.log(error);
+
+                })
             }
             else if (res._issues.email) {
+                this.setState({
+                    loading: false
+                })
                 Alert.alert(
                     '',
                     'Duplecate email !',
@@ -125,10 +235,18 @@ export default class EnterDetails extends Component {
                     { cancelable: false }
                 )
             }
-        }).catch(() => {
+        }).catch((error) => {
             this.setState({
                 loading: false
             })
+            Alert.alert(
+                '',
+                'Server Error !',
+                [
+                    { text: 'Close', onPress: () => { }, style: 'cancel' },
+                ],
+                { cancelable: false }
+            )
         })
     }
 
@@ -157,7 +275,7 @@ export default class EnterDetails extends Component {
             (<View style={styles.loadingContainer}>
                 <BarIndicator
                     count={7}
-                    color='#3dc464' />
+                    color='#2ecc71' />
             </View>) :
             null
     }
@@ -168,12 +286,14 @@ export default class EnterDetails extends Component {
             <ScrollView
                 keyboardShouldPersistTaps='always'
             >
-                <TouchableWithoutFeedback
-                    onPress={() => {
-                        Keyboard.dismiss()
-                    }}
-                >
-                    <View style={styles.container}>
+                <ImageBackground
+                    source={require('../../assets/images/background.png')}
+                    style={styles.container}>
+                    <TouchableWithoutFeedback
+                        onPress={() => {
+                            Keyboard.dismiss()
+                        }}
+                    >
                         <View style={{ flex: 1, zIndex: 1 }}>
                             <View style={styles.shadowContainer}>
                                 <View style={styles.header}>
@@ -185,9 +305,9 @@ export default class EnterDetails extends Component {
                                         activeOpacity={0.8}
                                         style={styles.iconContainer}>
                                         <Image
-                                    style={{ width: 30, height: 30 }}
-                                    source={require('../../assets/icons/back.png')}
-                                />
+                                            style={{ width: 11, height: 20 }}
+                                            source={require('../../assets/icons/back.png')}
+                                        />
                                     </TouchableOpacity>
                                     <Text style={styles.headerText}>
                                         Welcome
@@ -198,7 +318,7 @@ export default class EnterDetails extends Component {
                         </Text>
                                 <View style={[styles.inputContainer,
                                 this.redLineVelocity(this.state.nameVal) ?
-                                    { borderBottomColor: '#3dc464', } :
+                                    { borderBottomColor: '#2ecc71', } :
                                     { borderBottomColor: 'red', }
                                 ]}>
                                     <TextInput
@@ -213,7 +333,7 @@ export default class EnterDetails extends Component {
                                 </View>
                                 <View style={[styles.inputContainer,
                                 this.redLineVelocity(this.state.surnameVal) ?
-                                    { borderBottomColor: '#3dc464', } :
+                                    { borderBottomColor: '#2ecc71', } :
                                     { borderBottomColor: 'red', }
                                 ]}>
                                     <TextInput
@@ -228,7 +348,7 @@ export default class EnterDetails extends Component {
                                 </View>
                                 <View style={[styles.inputContainer,
                                 this.redLineVelocity(this.state.emailVal) ?
-                                    { borderBottomColor: '#3dc464', } :
+                                    { borderBottomColor: '#2ecc71', } :
                                     { borderBottomColor: 'red', }
                                 ]}>
                                     <TextInput
@@ -242,7 +362,7 @@ export default class EnterDetails extends Component {
                                 </View>
                                 <View style={[styles.inputContainer,
                                 this.redLineVelocity(this.state.passwordVal) ?
-                                    { borderBottomColor: '#3dc464', } :
+                                    { borderBottomColor: '#2ecc71', } :
                                     { borderBottomColor: 'red', }
                                 ]}>
                                     <TextInput
@@ -268,76 +388,94 @@ export default class EnterDetails extends Component {
                                 </TouchableOpacity>
                             </View>
                         </View>
-                        {this._renderLoading()}
-                    </View>
-                </TouchableWithoutFeedback>
+                    </TouchableWithoutFeedback>
+                    {this._renderLoading()}
+                    <LocationEnable
+                        modalVisible={this.state.locationModalVisible}
+                        callback={this.locationModalCallback}
+                        skipCallback={this.skipCallback}
+                    />
+                </ImageBackground>
             </ScrollView>
         );
     }
 }
 
+export default connect()(EnterDetails)
+
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#3dc464',
+        backgroundColor: '#2ecc71',
         height: Dimensions.get('window').height - StatusBar.currentHeight
     },
     shadowContainer: {
         flex: 1,
         backgroundColor: '#fff',
-        margin: 19,
-        borderRadius: 5,
+        margin: 15,
         elevation: 20,
-        shadowColor: 'rgba(0, 0, 0, 0.25)',
+        shadowColor: 'rgba(0, 0, 0, 0.5)',
         shadowOffset: {
             width: 0,
-            height: 4
+            height: 0
         },
-        shadowRadius: 6,
+        shadowRadius: 20,
         shadowOpacity: 1,
+        borderRadius: 4
     },
     header: {
         alignItems: 'center',
         justifyContent: 'center',
-        height: 66,
+        height: 50,
         borderBottomWidth: 1,
-        borderBottomColor: 'rgba(0,0,0,0.1)',
+        borderBottomColor: '#ecf0f1',
     },
     headerText: {
-        fontSize: 25
+        color: 'rgb(44, 62, 80)',
+        fontSize: 20,
+        fontFamily: 'Roboto-Regular',
     },
     descText: {
-        marginTop: 23,
+        marginTop: 20,
         marginBottom: 12,
-        paddingHorizontal: 25,
-        fontSize: 22
+        paddingHorizontal: 20,
+        color: 'rgb(44, 62, 80)',
+        fontSize: 16,
+        fontFamily: 'Roboto-Regular',
     },
     nextButton: {
         marginTop: 8,
         alignSelf: 'center',
-        backgroundColor: '#3dc464',
-        height: 52,
-        width: '58%',
-        borderRadius: 5,
+        backgroundColor: '#2ecc71',
+        height: 40,
+        width: 140,
+        borderRadius: 4,
         justifyContent: 'center',
         alignItems: 'center',
     },
     inputContainer: {
-        marginBottom: 17,
+        marginBottom: 10,
         height: 52,
-        marginHorizontal: 25,
+        marginHorizontal: 20,
         borderBottomWidth: 2
     },
     input: {
         flex: 1,
-        fontSize: 20,
+        fontSize: 16,
+        color: 'rgb(44, 62, 80)',
+        fontFamily: 'Roboto-Regular',
     },
     nextButtonText: {
-        fontSize: 20,
+        fontSize: 16,
+        fontFamily: 'Roboto-Regular',
         color: '#fff'
     },
     iconContainer: {
+        height: 30,
+        width: 30,
+        justifyContent: 'center',
+        alignItems: 'center',
         position: 'absolute',
-        left: 20,
+        left: 10,
     },
     loadingContainer: {
         zIndex: 2,

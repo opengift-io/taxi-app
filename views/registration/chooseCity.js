@@ -3,36 +3,116 @@ import {
     StyleSheet,
     Text,
     View,
-    TouchableOpacity
+    TouchableOpacity,
+    Image,
+    ImageBackground,
+    Alert,
+    AsyncStorage
 } from 'react-native';
 import API from '../../networking/api'
-import { BarIndicator } from 'react-native-indicators';
+import { BarIndicator } from 'react-native-indicators'
+import { GoogleApi } from '../../networking/google.api'
+import { connect } from 'react-redux'
 
-export default class ChooseCity extends Component {
-    api= new API()
+class ChooseCity extends Component {
+    api = new API()
+    alertVelosity = false
 
-    constructor(props){
+    constructor(props) {
         super(props)
-        this.state={
+        this.state = {
             loading: true,
             items: [],
             city: ''
         }
     }
 
-    componentDidMount(){
-       this.api.cities().then((res)=>{
-           console.log(res._items);
-           
-        this.setState({
-            items: res._items,
-            loading: false,
-            city: res._items[0].title
+    componentDidMount() {
+        this.getcities()
+    }
+
+    // getPlace(id) {
+    //     GoogleApi.getLocationFromID(id).then((res) => {
+    //         console.log(res);
+    //         console.log('sadddddddddddddddddddddddddddddddddddddddddddddddddddddd');
+    //     }).catch((error) => {
+    //         console.log(error)
+    //     })
+    // }
+
+
+    async setCity() {
+        try {
+            await AsyncStorage.setItem('city', this.state.city)
+        }
+        catch (error) {
+            console.log(error);
+
+        }
+    }
+
+    next() {
+        const { params } = this.props.navigation.state
+
+        GoogleApi.getCityLocation(this.state.city).then((res) => {
+            console.log(res);
+            this.props.dispatch({
+                type: 'SET_FROM',
+                value: {
+                    latitude: res.geometry.location.lat,
+                    longitude: res.geometry.location.lng,
+                    short_name: res.address_components[0].long_name,
+                    address: res.address_components.formatted_address,
+                    latitudeDelta: 0.06,
+                    longitudeDelta: 0.06,
+                    city: this.state.city
+                }
+            })
+            this.setCity().then(() => {
+                if (params.login) {
+                    this.props.dispatch({ type: 'SET_LOGIN', value: true })
+                }
+                else {
+                    this.props.navigation.navigate('uploadPhoto')
+                }
+            }).catch((error) => {
+                console.log(error);
+
+            })
         })
-       }).catch((error)=>{
-           console.log(error);
-           
-       })
+            .catch((error) => {
+                console.log(error);
+
+            })
+    }
+
+    getcities() {
+        const { params } = this.props.navigation.state
+        //5bf1aaf9af959e02a4f49782
+
+        this.api.cities(params.countryId, 1, '').then((res) => {
+            console.log(res);
+            this.alertVelosity = false
+            this.setState({
+                items: res._items,
+                loading: false,
+                city: params.city ? params.city : res._items[0].title
+            })
+        }).catch((error) => {
+            console.log(error);
+            if (!this.alertVelosity) {
+                Alert.alert(
+                    '',
+                    'Server Error !',
+                    [
+                        { text: 'Close', onPress: () => { }, style: 'cancel' },
+                    ],
+                    { cancelable: false }
+                )
+                this.alertVelosity = true
+            }
+            this.getcities()
+        })
     }
 
     _renderLoading() {
@@ -40,47 +120,60 @@ export default class ChooseCity extends Component {
             (<View style={styles.loadingContainer}>
                 <BarIndicator
                     count={7}
-                    color='#3dc464' />
+                    color='#2ecc71' />
             </View>) :
             null
     }
 
-    selectCity=(city)=>{
+    selectCity = (city) => {
         this.setState({
             city: city
         })
     }
 
     render() {
+        const { params } = this.props.navigation.state
+
         return (
-            <View style={styles.container}>
+            <ImageBackground
+                source={require('../../assets/images/background.png')}
+                style={styles.container}>
                 <View style={styles.content}>
                     <Text style={styles.title}>
                         Choose a city
                 </Text>
                     <View style={styles.iconContainer}>
+                        <Image
+                            style={{
+                                height: 80,
+                                width: 53
+                            }}
+                            source={require('../../assets/images/marker.png')}
+                        />
                     </View>
                     <Text style={styles.cityText}>
                         {this.state.city}
-                </Text>
-                <TouchableOpacity
+                    </Text>
+                    <TouchableOpacity
                         onPress={() => {
-                            this.props.navigation.navigate('turnOnGeolocation')
+                            this.next()
                         }}
                         activeOpacity={0.8}
                         style={styles.nextButton}>
                         <Text
-                        style={styles.nextButtonText}
+                            style={styles.nextButtonText}
                         >
                             Next Step
                 </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         onPress={() => {
-                            this.props.navigation.navigate('citiesList', 
-                            { items: this.state.items,
-                                selectCity: this.selectCity
-                            }
+                            this.props.navigation.navigate('citiesList',
+                                {
+                                    items: this.state.items,
+                                    selectCity: this.selectCity,
+                                    ...params
+                                }
                             )
                         }}
                         activeOpacity={0.8}
@@ -91,10 +184,12 @@ export default class ChooseCity extends Component {
                     </TouchableOpacity>
                 </View>
                 {this._renderLoading()}
-            </View>
+            </ImageBackground>
         );
     }
 }
+
+export default connect()(ChooseCity)
 
 const styles = StyleSheet.create({
     container: {
@@ -108,42 +203,48 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     title: {
-        fontSize: 25,
-        marginBottom: 15,
+        fontFamily: 'Roboto-Regular',
+        fontSize: 20,
+        marginBottom: 22,
+        color: 'rgb(44, 62, 80)',
     },
     iconContainer: {
-        height: 110,
-        width: 110,
-        backgroundColor: '#3dc464'
+        alignItems: 'center',
+        height: 80,
+        width: 80,
     },
     cityText: {
-        fontSize: 30,
-        marginVertical: 15
+        color: 'rgb(44, 62, 80)',
+        fontSize: 24,
+        marginTop: 9,
+        marginBottom: 20
     },
     button: {
         marginVertical: 20,
-        height: 40,
-        paddingHorizontal: 30,
-        borderRadius: 5,
+        height: 30,
+        width: 98,
+        borderRadius: 4,
         justifyContent: 'center',
         alignItems: 'center',
-        borderColor: '#3dc464',
-        borderWidth: 3
+        borderColor: '#2ecc71',
+        borderWidth: 2
     },
-    buttonText:{
-        fontSize: 20,
-        color: 'rgba(0,0,0,0.2)'
+    buttonText: {
+        fontFamily: 'Roboto-Regular',
+        fontSize: 14,
+        color: 'rgb(44, 62, 80)',
     },
-    nextButton:{
-        height: 40,
-        paddingHorizontal: 30,
-        borderRadius: 5,
+    nextButton: {
+        height: 30,
+        width: 98,
+        borderRadius: 4,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#3dc464'
+        backgroundColor: '#2ecc71'
     },
-    nextButtonText:{
-        fontSize: 20,
+    nextButtonText: {
+        fontFamily: 'Roboto-Regular',
+        fontSize: 14,
         color: '#fff'
     },
     loadingContainer: {

@@ -12,6 +12,7 @@ import {
   TextInput,
   ListView,
   ScrollView,
+  ImageBackground,
   Platform,
   TouchableNativeFeedback
 } from 'react-native'
@@ -116,9 +117,9 @@ export default class CountryPicker extends Component {
     return (
       <View style={[
         styles.itemCountryFlag,
-         itemStyle,{
-           marginHorizontal: 16
-         }]}>
+        itemStyle, {
+          marginHorizontal: 16
+        }]}>
         {isEmojiable
           ? CountryPicker.renderEmojiFlag(cca2, emojiStyle)
           : CountryPicker.renderImageFlag(cca2, imageStyle)}
@@ -194,9 +195,9 @@ export default class CountryPicker extends Component {
     )
   }
 
-  componentDidMount(){
-    if(!this.props.disabled)
-    this.onSelectCountry(this.props.cca2)
+  componentDidMount() {
+    if (!this.props.disabled)
+      this.onSelectCountry(this.props.cca2)
   }
 
   componentWillReceiveProps(nextProps) {
@@ -332,14 +333,16 @@ export default class CountryPicker extends Component {
     const country = countries[cca2]
     return (
       <View style={styles.itemCountry}>
-      <View style={{
-        flex: 1,
-        alignItems: 'flex-end',
+        <View style={{
+          flex: 1,
+          alignItems: 'flex-end',
         }}>
-        {this.props.showCallingCode &&
-          country.callingCode &&
-          <Text>{`+${country.callingCode}`}</Text>}
-          </View>
+          {this.props.showCallingCode &&
+            country.callingCode &&
+            <Text
+            style={styles.codeText}
+            >{`+${country.callingCode}`}</Text>}
+        </View>
         {CountryPicker.renderFlag(cca2)}
         <View style={styles.itemCountryName}>
           <Text style={styles.countryName} allowFontScaling={false}>
@@ -402,21 +405,31 @@ export default class CountryPicker extends Component {
           visible={this.state.modalVisible}
           onRequestClose={() => this.setState({ modalVisible: false })}
         >
-          <SafeAreaView style={styles.modalContainer}>
-            <View style={styles.shadowContainer}>
-              <View style={styles.header}>
-              <Text style={styles.headerText}>Choose your country</Text>
-                {this.props.closeable && (
-                  <CloseButton
-                    image={this.props.closeButtonImage}
-                    styles={[styles.closeButton, styles.closeButtonImage]}
-                    onPress={() => this.onClose()}
-                  />
-                )}
-                {/* {this.props.filterable && this.renderFilter()} */}
-              </View>
+          <ImageBackground
+            source={require('../../../assets/images/background.png')}
+            style={{
+              flex: 1,
+              backgroundColor: '#2ecc71',
+            }}>
+            <SafeAreaView style={styles.modalContainer}>
+              <View style={styles.shadowContainer}>
+                <View style={styles.header}>
+                  <Text style={styles.headerText}>Choose your country</Text>
+                  {this.props.closeable && (
+                    <TouchableOpacity
+                      style={styles.closeButton}
+                      onPress={() => this.onClose()}
+                    >
+                      <Image
+                        style={styles.closeButtonImage}
+                        source={require('../../../assets/icons/close.png')}
+                      />
+                    </TouchableOpacity>
+                  )}
+                  {/* {this.props.filterable && this.renderFilter()} */}
+                </View>
 
-              {/* <KeyboardAvoidingView behavior="padding"> */}
+                {/* <KeyboardAvoidingView behavior="padding"> */}
 
                 <View style={styles.contentContainer}>
                   <ListView
@@ -443,16 +456,19 @@ export default class CountryPicker extends Component {
                   </ScrollView>
                 )} */}
                 </View>
-              {/* </KeyboardAvoidingView> */}
-              <TouchableNativeFeedback
-                onPress={() => this.onClose()}
-              >
-                <View style={styles.cancelButton}>
-
-                </View>
-              </TouchableNativeFeedback>
-            </View>
-          </SafeAreaView>
+                {/* </KeyboardAvoidingView> */}
+                <TouchableNativeFeedback
+                  onPress={() => this.onClose()}
+                >
+                  <View style={styles.cancelButton}>
+                    <Text style={styles.cancelButtonText}>
+                      Cancel
+                  </Text>
+                  </View>
+                </TouchableNativeFeedback>
+              </View>
+            </SafeAreaView>
+          </ImageBackground>
         </Modal>
       </View>
     )

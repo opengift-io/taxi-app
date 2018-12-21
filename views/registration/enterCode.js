@@ -10,10 +10,10 @@ import {
     StatusBar,
     TextInput,
     Alert,
-    Image
+    Image,
+    ImageBackground
 } from 'react-native';
 import CountryPicker from '../../components/react-native-country-picker-modal'
-import SvgUri from 'react-native-svg-uri';
 
 export default class EnterCode extends Component {
     code = '1111'
@@ -45,12 +45,15 @@ export default class EnterCode extends Component {
         const { params } = this.props.navigation.state
 
         return (
-            <TouchableWithoutFeedback
+          
+                <ImageBackground 
+                source={require('../../assets/images/background.png')}
+                style={styles.container}>
+                  <TouchableWithoutFeedback
                 onPress={() => {
                     Keyboard.dismiss()
                 }}
             >
-                <View style={styles.container}>
                     <View style={styles.shadowContainer}>
                         <View style={styles.header}>
                             <TouchableOpacity
@@ -60,7 +63,7 @@ export default class EnterCode extends Component {
                                 activeOpacity={0.8}
                                 style={styles.iconContainer}>
                                 <Image
-                                    style={{ width: 30, height: 30 }}
+                                    style={{ width: 11, height: 20 }}
                                     source={require('../../assets/icons/back.png')}
                                 />
                                 {/* <SvgUri 
@@ -120,7 +123,7 @@ export default class EnterCode extends Component {
                         </View>
                         <Text style={styles.timerText}>
                             Hurry Up! New code will come after
-                        <Text style={{ color: '#3dc464' }}> 9 </Text>
+                        <Text style={{ color: '#2ecc71' }}> 9 </Text>
                             seconds
                         </Text>
                         <View style={styles.footer}>
@@ -129,8 +132,9 @@ export default class EnterCode extends Component {
                         </Text>
                         </View>
                     </View>
-                </View>
-            </TouchableWithoutFeedback>
+                    </TouchableWithoutFeedback>
+                </ImageBackground>
+            
         );
     }
 }
@@ -138,86 +142,98 @@ export default class EnterCode extends Component {
 const styles = StyleSheet.create({
     container: {
         height: Dimensions.get('window').height - StatusBar.currentHeight,
-        backgroundColor: '#3dc464',
+        backgroundColor: '#2ecc71',
     },
     shadowContainer: {
         flex: 1,
         backgroundColor: '#fff',
-        margin: 19,
-        borderRadius: 5,
+        margin: 15,
         elevation: 20,
-        shadowColor: 'rgba(0, 0, 0, 0.25)',
+        shadowColor: 'rgba(0, 0, 0, 0.5)',
         shadowOffset: {
-            width: 0,
-            height: 4
+          width: 0,
+          height: 0
         },
-        shadowRadius: 6,
+        shadowRadius: 20,
         shadowOpacity: 1,
+        borderRadius: 4
     },
     header: {
         alignItems: 'center',
         justifyContent: 'center',
-        height: 66,
+        height: 50,
         borderBottomWidth: 1,
-        borderBottomColor: 'rgba(0,0,0,0.1)',
+        borderBottomColor: '#ecf0f1',
     },
     headerText: {
-        fontSize: 25
+        color: 'rgb(44, 62, 80)',
+        fontSize: 20,
+        fontFamily: 'Roboto-Regular',
     },
     inputContainer: {
-        marginTop: 28,
-        height: 42,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 20,
+        height: 31,
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'center',
     },
     codeText: {
-        fontSize: 20,
-        marginRight: 18,
+        fontFamily: 'Roboto-Regular',
+        fontSize: 16,
+        marginRight: 16,
         textAlign: 'right',
-        color: 'rgba(0,0,0,0.1)'
+        color: 'rgba(0,0,0,0.1)',
+        textAlign: 'right',
     },
     numberText: {
+        color: 'rgb(44, 62, 80)',
         marginLeft: 16,
-        fontSize: 20,
+        fontFamily: 'Roboto-Regular',
+        fontSize: 16,
     },
     input: {
+        color: 'rgb(44, 62, 80)',
         textAlign: 'center',
         width: '100%',
-        fontSize: 20,
+        height: '100%',
+        fontFamily: 'Roboto-Regular',
+        fontSize: 16,
+        marginRight: 16,
     },
     buttonsContainer: {
-        marginTop: 25,
+        marginTop: 20,
         flexDirection: 'row',
         justifyContent: 'space-between',
-        height: 52,
-        marginHorizontal: 25
+        height: 40,
+        marginHorizontal: 20
     },
     codeInputContainer: {
         backgroundColor: '#fff',
         height: '100%',
         width: '40%',
-        borderBottomColor: '#3dc464',
+        borderBottomColor: '#2ecc71',
         borderBottomWidth: 3,
         justifyContent: 'center',
         alignItems: 'center',
     },
     nextButton: {
-        backgroundColor: '#3dc464',
+        backgroundColor: '#2ecc71',
         height: '100%',
         width: '58%',
-        borderRadius: 5,
+        borderRadius: 4,
         justifyContent: 'center',
         alignItems: 'center',
     },
     nextButtonText: {
-        fontSize: 20,
+        fontSize: 16,
+        fontFamily: 'Roboto-Regular',
         color: '#fff'
     },
     footer: {
         paddingVertical: 20,
-        paddingHorizontal: 25,
-        backgroundColor: 'rgba(0,0,0,0.05)',
+        paddingHorizontal: 20,
+        backgroundColor: '#ecf0f1',
         position: 'absolute',
         width: '100%',
         bottom: 0,
@@ -225,17 +241,23 @@ const styles = StyleSheet.create({
         borderBottomRightRadius: 5,
     },
     footerText: {
-        color: 'rgba(0,0,0,0.1)',
+        color: 'rgb(189, 195, 199)',
     },
     iconContainer: {
+        height: 30,
+        width: 30,
+        alignItems: 'center',
+        justifyContent: 'center',
         position: 'absolute',
-        left: 20,
+        left: 10,
     },
     timerText: {
+        fontFamily: 'Roboto-Regular',
         marginTop: 20,
-        marginHorizontal: 50,
-        fontSize: 20,
+        marginHorizontal: 40,
+        fontSize: 16,
         textAlign: 'center',
         alignSelf: 'center',
+        color: 'rgb(44, 62, 80)'
     }
 });
